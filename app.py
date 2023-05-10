@@ -1,30 +1,44 @@
+import uvicorn
 from chatbot import ChatBot, Chat
+from fastapi import (
+    FastAPI,
+    WebSocket,
+    WebSocketDisconnect
+)
+
+app = FastAPI()
+
+chatbot = ChatBot()
+
+
+@app.websocket("/ws")
+async def ws_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    print("WS connect.")
+
+    try:
+        chat = Chat(chatbot=chatbot)
+        
+        while True:
+            data = await websocket.receive_text()
+            bot_reply = await chat.get_reply(data)
+            await websocket.send_text(bot_reply)
+    except WebSocketDisconnect:
+        print("WS was closed.")
+
 
 if __name__ == "__main__":
-    chatbot = ChatBot()
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
-    chat1 = Chat(chatbot=chatbot)
-    chat2 = Chat(chatbot=chatbot)
-    chat3 = Chat(chatbot=chatbot)
+    """chatbot = ChatBot()
 
-    bot_reply = chat1.get_reply('hi')
-    print("chat1: ", bot_reply)
-    bot_reply = chat2.get_reply('hi')
-    print("chat2: ", bot_reply)
-    bot_reply = chat3.get_reply('hi')
-    print("chat3: ", bot_reply)
+        for _ in range(3):
+            chat = Chat(chatbot=chatbot)
+            bot_reply = chat.get_reply('hi')
+            print(bot_reply)
+            bot_reply = chat.get_reply('how are you?')
+            print(bot_reply)
+            bot_reply = chat.get_reply("i'm fine")
+            print(bot_reply)
 
-    bot_reply = chat1.get_reply('how are you?')
-    print("chat1: ", bot_reply)
-    bot_reply = chat2.get_reply('how are you?')
-    print("chat2: ", bot_reply)
-    bot_reply = chat3.get_reply('how are you?')
-    print("chat3: ", bot_reply)
-    
-    bot_reply = chat1.get_reply("i'm fine")
-    print("chat1: ", bot_reply)
-    bot_reply = chat2.get_reply("i'm fine")
-    print("chat2: ", bot_reply)
-    bot_reply = chat3.get_reply("i'm fine")
-    print("chat3: ", bot_reply)
-
+    """

@@ -1,5 +1,6 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import asyncio
 
 
 class ChatBot:
@@ -11,13 +12,15 @@ class ChatBot:
     model = AutoModelForCausalLM.from_pretrained(model_name)
     return model, tokenizer
 
-  def get_reply(self, user_message: str, chat_history_ids=None):   
+  async def get_reply(self, user_message: str, chat_history_ids=None):   
     # encode the new user message to be used by our model
     message_ids = self.tokenizer.encode(user_message + self.tokenizer.eos_token, return_tensors='pt')
 
     # append the encoded message to the past history so the model is aware of past context
     if chat_history_ids is not None:
       message_ids = torch.cat([chat_history_ids, message_ids], dim=-1)
+
+    # asyncio.sleep(1)
 
     # generated a response by the bot 
     chat_history_ids = self.model.generate(
@@ -44,8 +47,8 @@ class Chat:
         self.chat_history_ids = None
 
 
-    def get_reply(self, user_message: str) -> str:
-        bot_reply, chat_history_ids = self.chatbot.get_reply(user_message, self.chat_history_ids)
+    async def get_reply(self, user_message: str) -> str:
+        bot_reply, chat_history_ids = await self.chatbot.get_reply(user_message, self.chat_history_ids)
         self.chat_history_ids = chat_history_ids
         print(self.chat_history_ids)
 
