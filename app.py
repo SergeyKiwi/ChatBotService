@@ -18,7 +18,7 @@ async def ws_endpoint(websocket: WebSocket):
 
     try:
         chat = Chat(chatbot=chatbot)
-        
+
         while True:
             data = await websocket.receive_text()
             bot_reply = await chat.get_reply(data)
@@ -30,15 +30,3 @@ async def ws_endpoint(websocket: WebSocket):
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
-    """chatbot = ChatBot()
-
-        for _ in range(3):
-            chat = Chat(chatbot=chatbot)
-            bot_reply = chat.get_reply('hi')
-            print(bot_reply)
-            bot_reply = chat.get_reply('how are you?')
-            print(bot_reply)
-            bot_reply = chat.get_reply("i'm fine")
-            print(bot_reply)
-
-    """
